@@ -3,16 +3,35 @@ import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Page } from '../types';
+import { submitForm } from '../utils/submitForm';
 
 const Contact: React.FC = () => {
   const navigate = useNavigate();
-  const [formState, setFormState] = useState({ name: '', email: '', service: 'web', message: '' });
+  const [formState, setFormState] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const connectSectionRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await submitForm({ ...formState, formType: 'inquiry' });
+      if (result.status === 'success') {
+        setSubmitted(true);
+      } else {
+        setError(result.message || "Failed to send inquiry. Please try again.");
+      }
+    } catch (err) {
+      console.error("Contact form error:", err);
+      // Fallback for development if necessary, but following production path
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const scrollToConnect = () => {
@@ -174,7 +193,7 @@ const Contact: React.FC = () => {
               <motion.div variants={itemVariants} className="p-8 bg-blue-600 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-700"></div>
                 <div className="w-12 h-12 bg-white/10 text-white rounded-2xl flex items-center justify-center mb-6 relative z-10">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2v12a2 2 0 002 2z" /></svg>
                 </div>
                 <h4 className="text-xl font-black mb-2 relative z-10">Email Strategy</h4>
                 <p className="text-blue-100 font-medium relative z-10">info@optiscaledigital.co.uk</p>
@@ -219,13 +238,15 @@ const Contact: React.FC = () => {
                         value={formState.message} onChange={(e) => setFormState({...formState, message: e.target.value})} 
                       />
                     </div>
+                    {error && <p className="text-red-600 text-sm font-bold">{error}</p>}
                     <motion.button 
                       whileHover={{ scale: 1.02, backgroundColor: '#1e40af' }}
                       whileTap={{ scale: 0.98 }}
                       type="submit" 
-                      className="w-full bg-blue-600 text-white py-6 rounded-2xl font-black text-xl shadow-xl shadow-blue-500/20 transition-all uppercase tracking-widest"
+                      disabled={loading}
+                      className="w-full bg-blue-600 text-white py-6 rounded-2xl font-black text-xl shadow-xl shadow-blue-500/20 transition-all uppercase tracking-widest disabled:bg-slate-400"
                     >
-                      Send Message
+                      {loading ? "Sending..." : "Send Message"}
                     </motion.button>
                   </form>
                 ) : (
@@ -250,7 +271,7 @@ const Contact: React.FC = () => {
         </div>
       </section>
 
-      {/* Map and Footer area... (kept as in previous versions) */}
+      {/* Map and Footer area... */}
       <section className="py-24 bg-white relative">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div 

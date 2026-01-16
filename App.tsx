@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import AIChatbot from './components/AIChatbot';
+import WhatsAppFAB from './components/WhatsAppFAB';
 import CookieConsent from './components/CookieConsent';
 import SEO from './components/SEO';
 import Home from './pages/Home';
@@ -46,7 +46,7 @@ const App: React.FC = () => {
           <Route path="/terms" element={<TermsOfService />} />
         </Routes>
       </main>
-      <AIChatbot />
+      <WhatsAppFAB />
       <CookieConsent />
       <Footer />
     </div>

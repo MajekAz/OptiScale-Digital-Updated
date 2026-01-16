@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Page } from '../types';
+import { submitForm } from '../utils/submitForm';
 
 const WEBSITE_TYPES = [
   'Business Website', 'eCommerce Store', 'Portfolio', 'Landing Page', 
@@ -22,10 +23,11 @@ const BUDGET_RANGES = [
 ];
 
 const Brief: React.FC = () => {
-  const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
+    formType: 'brief',
     name: '',
     brandName: '',
     email: '',
@@ -55,24 +57,19 @@ const Brief: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     try {
-      const response = await fetch('/api/send-brief.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      
-      const result = await response.json();
+      const result = await submitForm(formData);
       if (result.status === 'success') {
         setIsSubmitted(true);
+        window.scrollTo(0, 0);
       } else {
-        alert(result.message || "Something went wrong. Please try again.");
+        setError(result.message || "Something went wrong. Please try again.");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      // Fallback for development/offline
-      setIsSubmitted(true);
+      setError("Failed to connect to the server. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -106,7 +103,6 @@ const Brief: React.FC = () => {
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
         <div className="text-center mb-16">
           <motion.span 
             initial={{ opacity: 0, y: 10 }}
@@ -134,7 +130,6 @@ const Brief: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-10">
-          {/* Section 1: Contact & Brand */}
           <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
             <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-8 bg-blue-50 text-[#0047AB] rounded-lg flex items-center justify-center text-sm">01</span>
@@ -180,7 +175,6 @@ const Brief: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 2: Project Nature */}
           <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
             <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-8 bg-blue-50 text-[#0047AB] rounded-lg flex items-center justify-center text-sm">02</span>
@@ -237,7 +231,6 @@ const Brief: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 3: Architecture & Design */}
           <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
             <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-8 bg-blue-50 text-[#0047AB] rounded-lg flex items-center justify-center text-sm">03</span>
@@ -317,7 +310,6 @@ const Brief: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 4: Logistics & Budget */}
           <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
             <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-8 bg-blue-50 text-[#0047AB] rounded-lg flex items-center justify-center text-sm">04</span>
@@ -395,7 +387,12 @@ const Brief: React.FC = () => {
             </div>
           </div>
 
-          {/* Submit */}
+          {error && (
+            <div className="mb-8 p-6 bg-red-50 text-red-600 rounded-2xl text-sm font-black border border-red-100 animate-fade-in">
+              {error}
+            </div>
+          )}
+
           <div className="text-center">
             <button
               type="submit"
